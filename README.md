@@ -16,9 +16,7 @@ All the inputs are valid
 
 When to Validate the User Input ?
 
-1. When form is submitted
-2. When Input losses focus
-3. On Every Keystroke
+Wtted 2. When Input losses focus 3. On Every Keystroke
 
 ---
 

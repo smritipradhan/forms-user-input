@@ -172,3 +172,210 @@ Note - ignore inline styling . Do not try this Stunt in your home .
 ```
 
 This is a cheating as we are setting a value which is not correct just to get rid of the invalid thing initially.
+Where this could be a problem ?
+if we do this - Ideally you may want to send a http request to the server.
+
+```
+  useEffect(() => {
+    if (isEnteredNameValid) console.log("Entered Name is Valid");
+  }, [])
+
+```
+
+This gets logged right at the beginning.
+
+Now we add another state, isEnteredNameTouched which will be used with isEnteredNameValid
+
+### React to Lost Focus
+
+We might want to react to the lost focus. When the user didnt enter anything and then losses focus we can give error feedback to the user.Now whenever the input field loses focus , even when there was nothing in the input field.
+Now when we enter something , we want to give the user chance to enter correct data and not to show error once the use starts typing correctly.
+We want to give the user immediate feedback when it comes to fixing.
+
+```
+import { useState, useRef, useEffect } from "react";
+
+const SimpleInput = (props) => {
+  const [enteredName, setEnteredName] = useState("");
+  const [isEnteredNameValid, setEnteredNameValid] = useState(false);
+  const [isEnteredNameTouched, setEnteredNameTouched] = useState(false);
+
+  const nameInputChangeHandler = (event) => {
+    setEnteredName(event.target.value);
+    if (event.target.value.trim() !== "") {
+      setEnteredNameValid(true);
+    }
+  };
+
+  const nameInputBlueHandler = (event) => {
+    setEnteredNameTouched(true);
+    if (enteredName.trim() === "") {
+      setEnteredNameValid(false);
+    }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setEnteredNameTouched(true);
+
+    if (enteredName.trim() === "") {
+      setEnteredNameValid(false);
+      return;
+    }
+    setEnteredNameValid(true);
+    setEnteredNameTouched(false);
+    setEnteredName("");
+  };
+
+  const nameInputIsInValid = !isEnteredNameValid && isEnteredNameTouched;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div
+        className={
+          nameInputIsInValid ? "form-control invalid" : "form-control "
+        }
+      >
+        <label htmlFor="name">Your Name</label>
+        <input
+          type="text"
+          id="name"
+          onChange={nameInputChangeHandler}
+          value={enteredName}
+          onBlur={nameInputBlueHandler}
+        />
+      </div>
+      {nameInputIsInValid && <p style={{ color: "red" }}> Name is Invalid</p>}
+      <div className="form-actions">
+        <button>Submit</button>
+      </div>
+    </form>
+  );
+};
+
+export default SimpleInput;
+
+```
+
+### Refactoring the Code
+
+We can get rid of isEnteredNameValid state as we can always derive isEnteredNameValid from the enteredName and whenever enteredName is change , the component rerenders and we are ensured the derived state is always updated.
+
+```
+import { useState } from "react";
+
+const SimpleInput = (props) => {
+  const [enteredName, setEnteredName] = useState("");
+  const [isEnteredNameTouched, setEnteredNameTouched] = useState(false);
+
+  const enteredNameIsValid = enteredName.trim() !== "";
+  const nameInputIsInValid = !enteredNameIsValid && isEnteredNameTouched;
+
+  const nameInputChangeHandler = (event) => {
+    setEnteredName(event.target.value);
+  };
+
+  const nameInputBlueHandler = (event) => {
+    setEnteredNameTouched(true);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setEnteredNameTouched(true);
+
+    if (!enteredNameIsValid) return;
+    setEnteredNameTouched(false);
+    setEnteredName("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div
+        className={
+          nameInputIsInValid ? "form-control invalid" : "form-control "
+        }
+      >
+        <label htmlFor="name">Your Name</label>
+        <input
+          type="text"
+          id="name"
+          onChange={nameInputChangeHandler}
+          value={enteredName}
+          onBlur={nameInputBlueHandler}
+        />
+      </div>
+      {nameInputIsInValid && <p style={{ color: "red" }}> Name is Invalid</p>}
+      <div className="form-actions">
+        <button>Submit</button>
+      </div>
+    </form>
+  );
+};
+
+export default SimpleInput;
+```
+
+### Managing the Overall Form Validity
+
+Here we have only one input field. But what should we do when there are more and we need to have the entire form Validity.
+In that case we need to check the form validity whenever one input field changes.
+
+```
+import { useEffect, useState } from "react";
+
+const SimpleInput = (props) => {
+  const [enteredName, setEnteredName] = useState("");
+  const [isEnteredNameTouched, setEnteredNameTouched] = useState(false);
+
+  const enteredNameIsValid = enteredName.trim() !== "";
+  const nameInputIsInValid = !enteredNameIsValid && isEnteredNameTouched;
+  let isFormIsValid = false;
+
+  if (enteredNameIsValid) {
+    isFormIsValid = true;
+  }
+
+  const nameInputChangeHandler = (event) => {
+    setEnteredName(event.target.value);
+  };
+
+  const nameInputBlueHandler = (event) => {
+    setEnteredNameTouched(true);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setEnteredNameTouched(true);
+
+    if (!enteredNameIsValid) return;
+
+    setEnteredName("");
+    setEnteredNameTouched(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div
+        className={
+          nameInputIsInValid ? "form-control invalid" : "form-control "
+        }
+      >
+        <label htmlFor="name">Your Name</label>
+        <input
+          type="text"
+          id="name"
+          onChange={nameInputChangeHandler}
+          value={enteredName}
+          onBlur={nameInputBlueHandler}
+        />
+      </div>
+      {nameInputIsInValid && <p style={{ color: "red" }}> Name is Invalid</p>}
+      <div className="form-actions">
+        <button>Submit</button>
+      </div>
+    </form>
+  );
+};
+
+export default SimpleInput;
+```

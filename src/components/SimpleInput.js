@@ -1,40 +1,41 @@
-import { useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 const SimpleInput = (props) => {
   const [enteredName, setEnteredName] = useState("");
-  const [isEnteredNameValid, setEnteredNameValid] = useState(true);
   const [isEnteredNameTouched, setEnteredNameTouched] = useState(false);
+
+  const enteredNameIsValid = enteredName.trim() !== "";
+  const nameInputIsInValid = !enteredNameIsValid && isEnteredNameTouched;
+  let isFormIsValid = false;
+
+  if (enteredNameIsValid) {
+    isFormIsValid = true;
+  }
 
   const nameInputChangeHandler = (event) => {
     setEnteredName(event.target.value);
-    if (event.target.value.trim() !== "") {
-      setEnteredNameValid(true);
-    }
   };
 
   const nameInputBlueHandler = (event) => {
     setEnteredNameTouched(true);
-    if (enteredName.trim() === "") {
-      setEnteredNameValid(false);
-    }
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setEnteredNameTouched(true);
-    if (enteredName.trim() === "") {
-      setEnteredNameValid(false);
-      return;
-    }
-    setEnteredNameValid(true);
+
+    if (!enteredNameIsValid) return;
+
     setEnteredName("");
+    setEnteredNameTouched(false);
   };
 
-  const nameInputIsValid = !isEnteredNameValid && isEnteredNameTouched;
   return (
     <form onSubmit={handleSubmit}>
       <div
-        className={nameInputIsValid ? "form-control invalid" : "form-control"}
+        className={
+          nameInputIsInValid ? "form-control invalid" : "form-control "
+        }
       >
         <label htmlFor="name">Your Name</label>
         <input
@@ -45,7 +46,7 @@ const SimpleInput = (props) => {
           onBlur={nameInputBlueHandler}
         />
       </div>
-      {nameInputIsValid && <p style={{ color: "red" }}> Name is Invalid</p>}
+      {nameInputIsInValid && <p style={{ color: "red" }}> Name is Invalid</p>}
       <div className="form-actions">
         <button>Submit</button>
       </div>
